@@ -94,28 +94,26 @@ const CreateGroup: React.FC = () => {
 
     setIsSaving(true);
 
+    // Gera ID único ANTES de salvar
+    const newGroupId = crypto?.randomUUID ? crypto.randomUUID() : `local_${Date.now()}`;
+
     const newGroup: Group = {
-      id: '',
+      id: newGroupId,
       name,
       type,
       members: members,
       currency: currency,
-      dates: mode === 'event' ? dates.trim() || undefined : undefined // Só salva data se for evento
+      dates: mode === 'event' ? dates.trim() || undefined : undefined
     };
 
-    await addGroup(newGroup);
-
-    // Aguarda um momento para o grupo ser adicionado
-    setTimeout(() => {
-      // Procura pelo grupo recém-criado pelo nome
-      const createdGroup = groups.find(g => g.name === name && g.type === type);
-      if (createdGroup) {
-        navigate(`/group/${createdGroup.id}`);
-      } else {
-        navigate('/groups');
-      }
+    try {
+      await addGroup(newGroup);
+      // Navega diretamente para o grupo criado
+      navigate(`/group/${newGroupId}`);
+    } catch (e) {
+      console.error('Erro ao criar grupo:', e);
       setIsSaving(false);
-    }, 300);
+    }
   };
 
 

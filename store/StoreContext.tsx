@@ -230,17 +230,19 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   };
 
   const addGroup = async (g: Group) => {
-    const tempId = newId();
-    const tempGroup = { ...g, id: tempId };
-    setGroups(prev => [tempGroup, ...prev]);
+    // Usa ID do grupo se já existir, senão gera um novo
+    const groupId = g.id || newId();
+    const groupToSave = { ...g, id: groupId };
+    setGroups(prev => [groupToSave, ...prev]);
     try {
-      await activeStore.addGroup(g);
+      await activeStore.addGroup(groupToSave);
       await loadData();
       showToast(`Grupo "${g.name}" criado!`);
     } catch (e) {
       console.error(e);
-      setGroups(prev => prev.filter(x => x.id !== tempId));
+      setGroups(prev => prev.filter(x => x.id !== groupId));
       showToast("Erro ao criar grupo", "error");
+      throw e; // Re-throw para o caller tratar
     }
   };
 
