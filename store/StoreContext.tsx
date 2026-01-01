@@ -18,6 +18,7 @@ interface StoreContextType {
   templates: ExpenseTemplate[];
   users: User[];
   notification: Notification | null;
+  localImportAvailable: null | { groups: number; expenses: number };
 
   updateUser: (user: User) => Promise<void>;
   addGroup: (group: Group) => Promise<void>;
@@ -36,6 +37,8 @@ interface StoreContextType {
   refreshData: () => Promise<void>;
   importLocalData: () => Promise<void>;
   loginAsGuest: () => void;
+  checkLocalImport: () => Promise<void>;
+  clearLocalAfterDecision: () => Promise<void>;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -49,6 +52,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [templates, setTemplates] = useState<ExpenseTemplate[]>([]);
   const [notification, setNotification] = useState<Notification | null>(null);
+  const [localImportAvailable, setLocalImportAvailable] = useState<null | { groups: number; expenses: number }>(null);
 
   // === HELPERS ===
   const LOAD_TIMEOUT_MS = Number((import.meta as any).env?.VITE_LOAD_TIMEOUT_MS ?? 15000);
@@ -64,10 +68,33 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     setNotification(null);
   };
 
+  const checkLocalImport = async () => {
+    try {
+      const local = await LocalDataStore.loadInitialData();
+      const g = local?.groups?.length ?? 0;
+      const e = local?.expenses?.length ?? 0;
+      // só oferece import se tiver conteúdo real
+      if (g > 0 || e > 0) setLocalImportAvailable({ groups: g, expenses: e });
+      else setLocalImportAvailable(null);
+    } catch {
+      setLocalImportAvailable(null);
+    }
+  };
+
+  // LIMPA dados locais SOMENTE quando o usuário decidir
+  const clearLocalAfterDecision = async () => {
+    try {
+      localStorage.removeItem('dividi_db_mvp_v1');
+    } catch { }
+    try { indexedDB.deleteDatabase('dividi_blobs_v1'); } catch { }
+    setLocalImportAvailable(null);
+    showToast('Dados locais descartados', 'info');
+  };
+
   const hardLogoutCleanup = async () => {
     localStorage.removeItem('dividi_is_guest');
-    // Limpa IndexedDB de receipts (best effort)
-    try { indexedDB.deleteDatabase('dividi_blobs_v1'); } catch { }
+    // IMPORTANTE: NÃO limpa dados locais aqui - preserva para importação
+    // try { indexedDB.deleteDatabase('dividi_blobs_v1'); } catch { }
   };
 
   const activeStore = useMemo(() => getStore(currentUser), [currentUser]);
@@ -124,13 +151,20 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_OUT') {
-        await hardLogoutCleanup();
-        resetState();
+        localStorage.removeItem('dividi_is_guest');
         setCurrentUser(null);
-      } else if (event === 'SIGNED_IN' && session) {
+        resetState();
+        setLocalImportAvailable(null);
+        return;
+      }
+
+      if (event === 'SIGNED_IN' && session) {
+        // IMPORTANTE: NÃO delete local DB aqui.
+        // Apenas desliga o flag de guest e checa se existe dado local para importar.
         localStorage.removeItem('dividi_is_guest');
         resetState();
         await initAuth();
+        await checkLocalImport(); // <-- agora o banner/CTA aparece pós-login
       }
     });
 
@@ -349,8 +383,9 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
 
     const localData = await LocalDataStore.loadInitialData();
-    if (localData.groups.length === 0) {
+    if (localData.groups.length === 0 && localData.expenses.length === 0) {
       showToast("Sem dados locais para importar.", "info");
+      await clearLocalAfterDecision();
       return;
     }
 
@@ -408,6 +443,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
       showToast("Migração concluída com sucesso!");
       await loadData();
+      await clearLocalAfterDecision(); // <-- limpa após sucesso
 
     } catch (e) {
       console.error("Erro na migração", e);
@@ -418,6 +454,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   return (
     <StoreContext.Provider value={{
       currentUser, isLoadingAuth, isLoadingData, groups, expenses, templates, users, notification,
+      localImportAvailable, checkLocalImport, clearLocalAfterDecision,
       updateUser, addGroup, updateGroup, addExpense, editExpense, deleteExpense, addComment,
       addTemplate, createExpenseFromTemplate, settleDebt, confirmPayment,
       showToast, clearNotification, refreshData: loadData, importLocalData, loginAsGuest
