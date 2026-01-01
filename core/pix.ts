@@ -29,7 +29,7 @@ const normalize = (str: string) => {
 };
 
 /**
- * Gera o payload oficial do Pix (BR Code)
+ * Gera o payload oficial do Pix (BR Code) conforme padrão BACEN
  * Se amount for 0 ou undefined, gera um QR estático sem valor definido.
  */
 export const generateBrCode = (key: string, name: string, city: string, amount?: number, description?: string): string => {
@@ -40,33 +40,37 @@ export const generateBrCode = (key: string, name: string, city: string, amount?:
 
   let payload = '';
 
-  // 00 - Payload Format Indicator
+  // 00 - Payload Format Indicator (obrigatório)
   payload += formatField('00', '01');
-  
-  // 26 - Merchant Account Information
+
+  // 01 - Point of Initiation Method (obrigatório)
+  // 11 = QR estático (reutilizável), 12 = QR dinâmico (único)
+  payload += formatField('01', amount && amount > 0 ? '12' : '11');
+
+  // 26 - Merchant Account Information (PIX)
   let merchantInfo = '';
   merchantInfo += formatField('00', 'BR.GOV.BCB.PIX'); // GUI
   merchantInfo += formatField('01', cleanKey); // Chave
   payload += formatField('26', merchantInfo);
 
-  // 52 - Merchant Category Code
+  // 52 - Merchant Category Code (obrigatório)
   payload += formatField('52', '0000');
 
-  // 53 - Transaction Currency (986 = BRL)
+  // 53 - Transaction Currency (obrigatório, 986 = BRL)
   payload += formatField('53', '986');
 
-  // 54 - Transaction Amount (Opcional)
+  // 54 - Transaction Amount (opcional)
   if (amount && amount > 0) {
     payload += formatField('54', amount.toFixed(2));
   }
 
-  // 58 - Country Code
+  // 58 - Country Code (obrigatório)
   payload += formatField('58', 'BR');
 
-  // 59 - Merchant Name
+  // 59 - Merchant Name (obrigatório)
   payload += formatField('59', cleanName);
 
-  // 60 - Merchant City
+  // 60 - Merchant City (obrigatório)
   payload += formatField('60', cleanCity);
 
   // 62 - Additional Data Field Template
@@ -74,12 +78,12 @@ export const generateBrCode = (key: string, name: string, city: string, amount?:
   additionalInfo += formatField('05', txId); // Reference Label (TxID)
   payload += formatField('62', additionalInfo);
 
-  // 63 - CRC16
+  // 63 - CRC16 (obrigatório, sempre no final)
   payload += '6304'; // ID + Length do CRC
-  
+
   // Calcula CRC
   const crc = crc16(payload);
-  
+
   return payload + crc;
 };
 
