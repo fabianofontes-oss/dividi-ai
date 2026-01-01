@@ -220,6 +220,7 @@ const Dashboard: React.FC = () => {
                         <div
                             key={group.id}
                             onClick={() => {
+                                alert(`Clicando em: ${group.name} (ID: ${group.id})`);
                                 console.log('[Dashboard] Clicking group:', group.id, group.name);
                                 navigate(`/group/${group.id}`);
                             }}
@@ -227,9 +228,9 @@ const Dashboard: React.FC = () => {
                         >
                             <div className="flex items-center space-x-4">
                                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl shadow-sm ${group.type === 'trip' ? 'bg-blue-50 text-blue-500 dark:bg-blue-500/20 dark:text-blue-400' :
-                                        group.type === 'home' ? 'bg-orange-50 text-orange-500 dark:bg-orange-500/20 dark:text-orange-400' :
-                                            group.type === 'couple' ? 'bg-pink-50 text-pink-500 dark:bg-pink-500/20 dark:text-pink-400' :
-                                                'bg-purple-50 text-purple-500 dark:bg-purple-500/20 dark:text-purple-400'
+                                    group.type === 'home' ? 'bg-orange-50 text-orange-500 dark:bg-orange-500/20 dark:text-orange-400' :
+                                        group.type === 'couple' ? 'bg-pink-50 text-pink-500 dark:bg-pink-500/20 dark:text-pink-400' :
+                                            'bg-purple-50 text-purple-500 dark:bg-purple-500/20 dark:text-purple-400'
                                     }`}>
                                     {group.type === 'trip' && <Icons.Car className="w-6 h-6" />}
                                     {group.type === 'home' && <Icons.Home className="w-6 h-6" />}
