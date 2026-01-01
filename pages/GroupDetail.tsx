@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Expense, Debt } from '../types';
 import { Icons } from '../components/ui/Icons';
@@ -24,6 +24,18 @@ const GroupDetail: React.FC = () => {
    const debts = useMemo(() => group ? calculateGroupDebts(group, groupExpenses) : [], [group, groupExpenses]);
    const groupTemplates = templates.filter(t => t.groupId === id);
    const images = groupExpenses.filter(e => e.receiptUrl || e.receiptId);
+
+   // Debug logging
+   useEffect(() => {
+      console.log('[GroupDetail] Debug:', {
+         id,
+         groupsCount: groups.length,
+         groupFound: !!group,
+         isLoadingAuth,
+         isLoadingData,
+         groupIds: groups.map(g => g.id)
+      });
+   }, [id, groups, group, isLoadingAuth, isLoadingData]);
 
    // Evita flash de erro durante carregamento inicial
    if (!group) {
