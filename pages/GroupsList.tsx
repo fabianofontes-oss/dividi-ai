@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useStore } from '../store/StoreContext';
 import { Icons } from '../components/ui/Icons';
 
@@ -53,18 +53,15 @@ const GroupsList: React.FC = () => {
           </div>
         ) : (
           filteredGroups.map(group => (
-            <div
+            <Link
               key={group.id}
-              onClick={() => {
-                console.log('[GroupsList] Clicking group:', group.id, group.name);
-                navigate(`/group/${group.id}`);
-              }}
-              className="group relative overflow-hidden p-4 rounded-2xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/5 hover:border-purple-300 dark:hover:bg-slate-800/80 transition-all active:scale-[0.98] cursor-pointer shadow-sm flex items-center space-x-4"
+              to={`/group/${group.id}`}
+              className="group relative overflow-hidden p-4 rounded-2xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/5 hover:border-purple-300 dark:hover:bg-slate-800/80 transition-all active:scale-[0.98] cursor-pointer shadow-sm flex items-center space-x-4 block"
             >
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl shadow-sm ${group.type === 'trip' ? 'bg-blue-50 text-blue-500 dark:bg-blue-500/20 dark:text-blue-400' :
-                  group.type === 'home' ? 'bg-orange-50 text-orange-500 dark:bg-orange-500/20 dark:text-orange-400' :
-                    group.type === 'couple' ? 'bg-pink-50 text-pink-500 dark:bg-pink-500/20 dark:text-pink-400' :
-                      'bg-purple-50 text-purple-500 dark:bg-purple-500/20 dark:text-purple-400'
+                group.type === 'home' ? 'bg-orange-50 text-orange-500 dark:bg-orange-500/20 dark:text-orange-400' :
+                  group.type === 'couple' ? 'bg-pink-50 text-pink-500 dark:bg-pink-500/20 dark:text-pink-400' :
+                    'bg-purple-50 text-purple-500 dark:bg-purple-500/20 dark:text-purple-400'
                 }`}>
                 {group.type === 'trip' && <Icons.Car className="w-6 h-6" />}
                 {group.type === 'home' && <Icons.Home className="w-6 h-6" />}
@@ -80,7 +77,7 @@ const GroupsList: React.FC = () => {
                 </div>
               </div>
               <Icons.ChevronRight className="w-5 h-5 text-slate-300 dark:text-slate-600" />
-            </div>
+            </Link>
           ))
         )}
       </div>

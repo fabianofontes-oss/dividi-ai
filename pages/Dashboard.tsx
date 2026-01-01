@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Icons } from '../components/ui/Icons';
 import { calculateGroupDebts, formatCurrency } from '../core/calculations';
 import { useStore } from '../store/StoreContext';
@@ -217,14 +217,10 @@ const Dashboard: React.FC = () => {
                         </div>
                     )}
                     {recentGroups.map(group => (
-                        <div
+                        <Link
                             key={group.id}
-                            onClick={() => {
-                                alert(`Clicando em: ${group.name} (ID: ${group.id})`);
-                                console.log('[Dashboard] Clicking group:', group.id, group.name);
-                                navigate(`/group/${group.id}`);
-                            }}
-                            className="group relative overflow-hidden p-4 rounded-2xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/5 hover:border-purple-300 dark:hover:bg-slate-800/80 transition-all active:scale-[0.98] cursor-pointer shadow-sm"
+                            to={`/group/${group.id}`}
+                            className="group relative overflow-hidden p-4 rounded-2xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/5 hover:border-purple-300 dark:hover:bg-slate-800/80 transition-all active:scale-[0.98] cursor-pointer shadow-sm block"
                         >
                             <div className="flex items-center space-x-4">
                                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl shadow-sm ${group.type === 'trip' ? 'bg-blue-50 text-blue-500 dark:bg-blue-500/20 dark:text-blue-400' :
@@ -248,7 +244,7 @@ const Dashboard: React.FC = () => {
                                     <Icons.ChevronRight className="w-5 h-5 text-slate-300 dark:text-slate-600" />
                                 </div>
                             </div>
-                        </div>
+                        </Link>
                     ))}
                 </div>
             </div>
