@@ -1,0 +1,7 @@
+{
+  "name": "dividi.ai",
+  "description": "Racha inteligente entre amigos com gestão de gastos e integração de fluxo PIX.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
