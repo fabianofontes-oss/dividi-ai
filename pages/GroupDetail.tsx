@@ -233,9 +233,11 @@ const GroupDetail: React.FC = () => {
                   <div>
                      <div className="flex items-center justify-between mb-3 px-1">
                         <h3 className="font-bold text-slate-900 dark:text-white text-sm uppercase tracking-wide">Membros</h3>
-                        <button onClick={() => navigate(`/group/${id}/settings`)} className="text-xs font-bold text-purple-600 dark:text-purple-400">
-                           Gerenciar
-                        </button>
+                        {isAdminOfGroup(group, currentUser?.id) && (
+                           <button onClick={() => navigate(`/group/${id}/settings`)} className="text-xs font-bold text-purple-600 dark:text-purple-400">
+                              Gerenciar
+                           </button>
+                        )}
                      </div>
                      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800">
                         {group.members.map(m => (

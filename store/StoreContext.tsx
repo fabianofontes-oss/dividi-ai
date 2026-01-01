@@ -26,7 +26,6 @@ interface StoreContextType {
   addExpense: (expense: Expense) => Promise<void>;
   editExpense: (expense: Expense) => Promise<void>;
   deleteExpense: (expenseId: string) => Promise<void>;
-  addComment: (expenseId: string, text: string) => Promise<void>;
   addTemplate: (template: ExpenseTemplate) => void;
   createExpenseFromTemplate: (template: ExpenseTemplate, amountOverride?: number) => void;
   settleDebt: (debt: Debt, groupId: string) => Promise<void>;
@@ -315,10 +314,6 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     showToast("Gasto removido", "info");
   };
 
-  const addComment = async (id: string, text: string) => {
-    showToast("Comentários em breve", "info");
-  };
-
   const addTemplate = async (t: ExpenseTemplate) => {
     setTemplates(prev => [...prev, t]);
     await activeStore.addTemplate(t);
@@ -455,7 +450,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     <StoreContext.Provider value={{
       currentUser, isLoadingAuth, isLoadingData, groups, expenses, templates, users, notification,
       localImportAvailable, checkLocalImport, clearLocalAfterDecision,
-      updateUser, addGroup, updateGroup, addExpense, editExpense, deleteExpense, addComment,
+      updateUser, addGroup, updateGroup, addExpense, editExpense, deleteExpense,
       addTemplate, createExpenseFromTemplate, settleDebt, confirmPayment,
       showToast, clearNotification, refreshData: loadData, importLocalData, loginAsGuest
     }}>
