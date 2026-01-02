@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Icons } from '../components/ui/Icons';
-import { useAuth } from '../src/modules/auth';
+import { useAuth } from '@/src/modules/auth';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabaseClient';
 
