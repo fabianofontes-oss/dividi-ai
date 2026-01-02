@@ -5,7 +5,7 @@ import { Icons } from '../components/ui/Icons';
 import { calculateGroupDebts, formatCurrency } from '../core/calculations';
 import ExpenseDetailModal from '../components/ExpenseDetailModal';
 import { useStore } from '../store/StoreContext';
-import { copyToClipboard } from '../core/pix';
+import { copyToClipboard, generateBrCode } from '../core/pix';
 import { ReceiptImage } from '../components/ui/ReceiptImage';
 import { resolvePaymentHandle } from '../core/paymentRails';
 import { isAdminOfGroup } from '../utils/permissions';
@@ -71,6 +71,19 @@ const GroupDetail: React.FC = () => {
    };
 
    const paymentInfo = activeDebt ? getPaymentInfo(activeDebt.to) : null;
+   
+   const getPixQrPayload = () => {
+      if (!activeDebt || !paymentInfo?.key) return '';
+      const member = getMember(activeDebt.to);
+      return generateBrCode(
+         paymentInfo.key,
+         member?.name || 'Usuario',
+         'Brasilia',
+         activeDebt.amount,
+         `Divida ${group.name}`
+      );
+   };
+   
    const getQrCodeUrl = (data: string) => `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(data)}`;
 
    return (
@@ -390,11 +403,12 @@ const GroupDetail: React.FC = () => {
                               <p className="text-sm text-slate-500 mb-6">Mostre o QR Code para receber</p>
                               <div className="bg-white p-4 rounded-2xl shadow-inner border border-slate-200 mb-6">
                                  <img
-                                    src={getQrCodeUrl(paymentInfo.key)}
-                                    alt="QR Code"
+                                    src={getQrCodeUrl(getPixQrPayload())}
+                                    alt="QR Code PIX"
                                     className="w-48 h-48 mix-blend-multiply"
                                  />
                               </div>
+                              <p className="text-xs text-slate-400 mb-4">Valor: {formatCurrency(activeDebt.amount, group.currency)}</p>
                            </>
                         ) : (
                            <div className="my-6 text-center w-full">
@@ -408,10 +422,15 @@ const GroupDetail: React.FC = () => {
                         <p className="text-4xl font-bold text-slate-900 dark:text-white mb-6 tracking-tight">{formatCurrency(activeDebt.amount, group.currency)}</p>
 
                         {paymentInfo.key && (
-                           <button onClick={() => { copyToClipboard(paymentInfo.key || ''); alert('Copiado!'); }} className="w-full py-3.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold flex items-center justify-center space-x-2 shadow-lg shadow-purple-500/20 transition-all">
-                              <Icons.Copy className="w-4 h-4" />
-                              <span>Copiar {paymentInfo.label}</span>
-                           </button>
+                           <>
+                              <button onClick={() => { copyToClipboard(paymentInfo.qr ? getPixQrPayload() : paymentInfo.key); alert('Copiado!'); }} className="w-full py-3.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold flex items-center justify-center space-x-2 shadow-lg shadow-purple-500/20 transition-all mb-2">
+                                 <Icons.Copy className="w-4 h-4" />
+                                 <span>Copiar {paymentInfo.qr ? 'PIX Copia e Cola' : paymentInfo.label}</span>
+                              </button>
+                              {paymentInfo.qr && (
+                                 <p className="text-xs text-slate-400 text-center">BR Code com valor de {formatCurrency(activeDebt.amount, group.currency)}</p>
+                              )}
+                           </>
                         )}
                      </div>
                   )}
