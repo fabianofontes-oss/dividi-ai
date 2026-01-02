@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { supabase } from '../services/supabaseClient';
 import { Icons } from '../components/ui/Icons';
-import { useStore } from '../store/StoreContext';
+import { useAuth } from '../src/modules/auth';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../services/supabaseClient';
 
 type AuthMode = 'magic' | 'password';
 
 const Login: React.FC = () => {
-  const { loginAsGuest } = useStore();
+  const { login, signup, error: authError } = useAuth();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState('');
@@ -38,41 +38,35 @@ const Login: React.FC = () => {
         // --- LOGIN VIA SENHA ---
         if (isSignUp) {
           // Cadastrar
-          const { error } = await supabase.auth.signUp({
-            email,
-            password,
-          });
-          if (error) throw error;
-          
-          alert('Cadastro realizado! Se você não conseguir entrar, verifique seu e-mail para confirmar a conta.');
-          setMode('password');
-          setIsSignUp(false);
+          const success = await signup(email, password, email.split('@')[0]);
+          if (success) {
+            alert('Cadastro realizado! Verifique seu e-mail para confirmar a conta.');
+            setMode('password');
+            setIsSignUp(false);
+          } else {
+            throw new Error(authError || 'Erro ao criar conta');
+          }
         } else {
           // Entrar
-          const { error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
-          
-          if (error) {
-              if (error.message.includes("Invalid login credentials")) {
-                  throw new Error("E-mail ou senha incorretos. Se acabou de criar a conta, verifique se precisa confirmar o e-mail.");
-              }
-              throw error;
+          const success = await login(email, password);
+          if (success) {
+            navigate('/');
+          } else {
+            throw new Error(authError || 'E-mail ou senha incorretos');
           }
-          // O redirecionamento acontece automaticamente pelo AuthListener no StoreContext
         }
       }
-    } catch (error: any) {
-      alert(error.message || 'Ocorreu um erro ao tentar entrar.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Ocorreu um erro ao tentar entrar.';
+      alert(message);
     } finally {
       setLoading(false);
     }
   };
 
   const handleGuestAccess = () => {
-      loginAsGuest();
-      navigate('/');
+    localStorage.setItem('dividi_is_guest', 'true');
+    window.location.href = '/';
   };
 
   return (
