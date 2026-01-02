@@ -25,17 +25,7 @@ const GroupDetail: React.FC = () => {
    const groupTemplates = templates.filter(t => t.groupId === id);
    const images = groupExpenses.filter(e => e.receiptUrl || e.receiptId);
 
-   // Debug logging
-   useEffect(() => {
-      console.log('[GroupDetail] Debug:', {
-         id,
-         groupsCount: groups.length,
-         groupFound: !!group,
-         isLoadingAuth,
-         isLoadingData,
-         groupIds: groups.map(g => g.id)
-      });
-   }, [id, groups, group, isLoadingAuth, isLoadingData]);
+   // Group validation happens silently
 
    // Evita flash de erro durante carregamento inicial
    if (!group) {

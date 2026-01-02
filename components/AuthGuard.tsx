@@ -11,14 +11,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
   const { currentUser, isLoadingAuth } = useStore();
   const location = useLocation();
 
-  React.useEffect(() => {
-    console.log('[AuthGuard] Check:', {
-      path: location.pathname,
-      hasUser: !!currentUser,
-      userId: currentUser?.id,
-      isLoadingAuth
-    });
-  }, [location.pathname, currentUser, isLoadingAuth]);
+  // Auth check happens silently
 
   if (isLoadingAuth) {
     return (
@@ -30,7 +23,6 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
   }
 
   if (!currentUser) {
-    console.log('[AuthGuard] No user, redirecting to login from:', location.pathname);
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
